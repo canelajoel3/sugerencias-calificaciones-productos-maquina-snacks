@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - VendingOS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/x-ico" href="/static/img_ico/snack.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-900 flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-slate-800 p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-700">
+        <div class="text-center mb-8">
+            <div class="inline-flex p-3 bg-blue-500/10 text-blue-400 rounded-xl mb-3">
+                <i class="fa-solid fa-shield-halved text-2xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-white tracking-wide">VendingOS</h1>
+            <p class="text-slate-400 text-sm mt-1">Control Central de Administración</p>
+        </div>
+
+        <div id="alert-container" class="hidden mb-4 p-4 rounded-xl text-sm border"></div>
+
+        <form id="login-form" class="space-y-5">
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Correo Electrónico</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                        <i class="fa-solid fa-envelope text-sm"></i>
+                    </span>
+                    <input type="email" id="email" required
+                        class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                        placeholder="admin@ejemplo.com">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Contraseña</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                        <i class="fa-solid fa-lock text-sm"></i>
+                    </span>
+                    <input type="password" id="password" required
+                        class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                        placeholder="••••••••">
+                </div>
+            </div>
+
+            <button type="submit"
+                class="w-full py-3 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-medium rounded-xl transition-colors shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 mt-2">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                Ingresar al Sistema
+            </button>
+        </form>
+
+        <div class="text-center mt-6">
+            <p class="text-sm text-slate-500">¿No tienes cuenta? 
+                <a href="/registro" class="text-blue-400 hover:underline">Registrarse</a>
+            </p>
+        </div>
+    </div>
+
+   <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const alertContainer = document.getElementById('alert-container');
+            const email = document.getElementById('email').value;
+            const contrasena = document.getElementById('password').value;
+
+            // Limpiar alertas previas
+            alertContainer.classList.add('hidden');
+
+            try {
+                // Apunta exactamente a tu endpoint POST /auth/login
+                const response = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        contrasena: contrasena
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // 1. ¡ÉXITO! Guardamos el token con ambas llaves para evitar rebotes en el dashboard
+                    localStorage.setItem('access_token', data.access_token);
+                    localStorage.setItem('token_admin', data.access_token); // <-- ESTA LÍNEA CORRIGE EL BUCLE
+                    localStorage.setItem('token_type', data.token_type);
+
+                    // Alerta visual rápida de éxito
+                    alertContainer.className = "mb-4 p-4 rounded-xl text-sm border bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                    alertContainer.innerHTML = `<i class="fa-solid fa-circle-check mr-2"></i> Autenticación exitosa. Redireccionando...`;
+                    alertContainer.classList.remove('hidden');
+
+                    // 2. Redireccionamos al dashboard real después de 1 segundo
+                    setTimeout(() => {
+                        window.location.href = "/admin/dashboard"; 
+                    }, 1000);
+
+                } else {
+                    // Captura errores del backend (como tus códigos 404 o 401 de contraseña inválida)
+                    throw new Error(data.detail || 'Credenciales inválidas');
+                }
+
+            } catch (error) {
+                // Mostrar alerta de error en rojo
+                alertContainer.className = "mb-4 p-4 rounded-xl text-sm border bg-rose-500/10 text-rose-400 border-rose-500/20";
+                alertContainer.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-2"></i> ${error.message}`;
+                alertContainer.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

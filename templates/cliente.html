@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Máquina Expendedora</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:,">
+    <link rel="icon" type="image/x-ico" href="/static/img_ico/snack.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body data-maquina-id="{{ id_maquina }}" class="bg-slate-950 text-slate-100 font-sans min-h-screen flex items-start justify-center p-4 overflow-y-auto">
+
+    <div class="w-full max-w-md mx-auto my-auto py-4">
+        
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 space-y-6">
+            
+            <div class="text-center space-y-2">
+                <h1 class="text-2xl font-bold text-white tracking-tight">¡Tu opinión cuenta!</h1>
+                <div class="inline-block bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold px-3 py-1 rounded-full">
+                    Máquina <span id="maquinaIdDisplay" class="font-bold">#{{ id_maquina }}</span>
+                </div>
+            </div>
+
+            <div id="confirmation" class="hidden bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm text-center py-3 px-4 rounded-xl font-medium animate-pulse">
+                ¡Gracias por tu retroalimentación!
+            </div>
+
+            <form id="suggestionForm" class="space-y-3">
+                <label class="block text-sm font-medium text-slate-300">💡 ¿Falta tu producto favorito?</label>
+                <input
+                    type="text"
+                    id="suggestion"
+                    class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all"
+                    placeholder="Ej: Red Bull, Galletas de avena..."
+                    required
+                >
+                <button type="submit" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-medium text-sm py-3 rounded-xl shadow-lg shadow-cyan-600/10 active:scale-[0.98] transition-all">
+                    Enviar Sugerencia
+                </button>
+            </form>
+
+            <div class="border-t border-slate-800/80 my-2"></div>
+
+            <form id="ratingForm" class="space-y-4">
+                <label class="block text-sm font-medium text-slate-300">⭐ ¿Qué tal tu compra hoy?</label>
+
+                <select id="productSelect" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-500 transition-all cursor-pointer" required>
+                    <option value="" disabled selected>Cargando catálogo de productos...</option>
+                </select>
+
+                <div class="bg-slate-800/40 border border-slate-800 rounded-xl p-4 space-y-3">
+                    <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Tu calificación:</span>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button type="button" id="likeBtn" class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-medium py-3 px-4 rounded-xl text-slate-300 transition-all active:scale-95">
+                            👍 Me gusta
+                        </button>
+                        <button type="button" id="dislikeBtn" class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-medium py-3 px-4 rounded-xl text-slate-300 transition-all active:scale-95">
+                            👎 No me gusta
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" id="submitRating" class="w-full bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-sm py-3 rounded-xl transition-all" disabled>
+                    Enviar Calificación
+                </button>
+            </form>
+
+            <div class="text-center text-xs text-slate-500 pt-2">
+                Tu retroalimentación nos ayuda a mejorar
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', path='js/cliente.js') }}" defer></script>
+</body>
+</html>
