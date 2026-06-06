@@ -133,6 +133,13 @@
                     <button onclick="if(window.abrirModalProducto) window.abrirModalProducto()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-lg shadow-blue-600/20">
                         ➕ Nuevo Producto
                     </button>
+                    <div id="contenedor-buscador" class="flex gap-2">
+                        <input type="text" id="buscador-productos" placeholder="Buscar producto..." 
+                            class="bg-gray-700 text-white px-4 py-2 rounded-lg w-full">
+                        <button id="btn-ejecutar-busqueda" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                            Buscar
+                        </button>
+                    </div>
                 </div>
                 <div class="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden">
                     <table class="w-full text-left border-collapse">
@@ -143,8 +150,13 @@
                                 <th class="px-6 py-4 text-center">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="tabla-productos-body" class="divide-y divide-gray-800/50"></tbody>
+                        <tbody id="tabla-productos-body" class="divide-y divide-gray-800/50">
+
+                        </tbody>
                     </table>
+                    <div id="mensaje-no-resultados" class="hidden text-center py-10">
+                        <p class="text-gray-500 font-medium">No se encontraron productos que coincidan con tu búsqueda.</p>
+                    </div>
                 </div>
             </div>
 

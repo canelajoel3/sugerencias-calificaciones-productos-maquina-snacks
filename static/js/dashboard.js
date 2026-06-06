@@ -1,4 +1,3 @@
-
 const API_BASE_URL = '';
 
 const token = localStorage.getItem('token_admin') || ""; 
@@ -42,6 +41,7 @@ function manejarSesionExpirada() {
     window.location.href = '/login';
 }
 
+
 function cambiarPestana(pestana) {
     const secciones = ['panel', 'productos', 'maquinas', 'sugerencias', 'calificaciones'];
     
@@ -68,6 +68,7 @@ function cambiarPestana(pestana) {
         }
     });
 
+    // 2. Actualizar encabezados
     const titulos = {
         'panel': { t: 'Panel de Control Global', s: 'Resumen analítico del estado del negocio' },
         'productos': { t: 'Catálogo de Productos', s: 'Gestión de artículos y precios base para códigos QR' },
@@ -79,6 +80,24 @@ function cambiarPestana(pestana) {
     if (titulos[pestana]) {
         document.getElementById('titulo-vista').innerText = titulos[pestana].t;
         document.getElementById('subtitulo-vista').innerText = titulos[pestana].s;
+    }
+
+    switch(pestana) {
+        case 'productos': 
+            cargarProductos(); 
+            break;
+        case 'maquinas': 
+            cargarMaquinas(); 
+            break;
+        case 'sugerencias': 
+            cargarSugerencias(); 
+            break;
+        case 'calificaciones': 
+            cargarCalificaciones(); 
+            break;
+        case 'panel':
+            cargarMetricasDashboard();
+            break;
     }
 }
 
@@ -271,8 +290,8 @@ async function cargarCalificaciones() {
 
 async function guardarProducto(e) {
     e.preventDefault();
-    
-    const formData = new FormData();
+    const formData = new FormData(e.target);
+
     formData.append('nombre', document.getElementById('prod-nombre').value);
     formData.append('file', document.getElementById('prod-imagen').files[0]);
 
@@ -285,11 +304,13 @@ async function guardarProducto(e) {
             body: formData
         });
 
-        if (!response.ok) throw new Error("Fallo al guardar producto");
+        if (!response.ok) throw new Error("Error al guardar producto");
         
-        document.getElementById('form-producto').reset();
-        if (window.cerrarModalProducto) window.cerrarModalProducto();
-        ejecutarCargaCompleta(); 
+        e.target.reset(); 
+        cerrarModalEditarProducto(); 
+
+        await cargarProductos();
+        await cargarMetricasDashboard();
     } catch (error) {
         alert("Error al registrar el producto.");
     }
@@ -319,11 +340,12 @@ function editarMaquina(id, nombre, estado) {
     document.getElementById('modal-editar-maquina').classList.remove('hidden');
 }
 
-
 document.getElementById('form-editar-producto').addEventListener('submit', async (e) => {
     e.preventDefault();
     const idProducto = document.getElementById('edit-prod-id').value;
     const nombre = document.getElementById('edit-prod-nombre').value;
+    const precioInput = document.getElementById('edit-prod-precio'); 
+    const precio = precioInput ? parseFloat(precioInput.value) : 0;
 
     try {
         const response = await fetch(`/admin/productos/${idProducto}`, {
@@ -332,13 +354,19 @@ document.getElementById('form-editar-producto').addEventListener('submit', async
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ nombre: nombre }) 
+            body: JSON.stringify({ nombre, precio })
         });
 
-        if (!response.ok) throw new Error("Error al actualizar");
+        if (response.status === 401) return manejarSesionExpirada();
+        if (!response.ok) throw new Error("No se pudo actualizar el producto");
 
+        // Cerrar modal
         if (window.cerrarModalEditarProducto) window.cerrarModalEditarProducto();
-        ejecutarCargaCompleta(); 
+        
+        // ACTUALIZACIÓN DE TABLA SIN RECARGAR LA PÁGINA
+        await cargarProductos();
+        await cargarMetricasDashboard();
+        
     } catch (error) {
         console.error(error);
         alert("Ocurrió un error al actualizar el producto.");
@@ -357,7 +385,6 @@ function abrirModalEditarMaquina(id, nombre, estado) {
         e.preventDefault();
         const idProducto = document.getElementById('edit-prod-id').value;
         const nombre = document.getElementById('edit-prod-nombre').value;
-        const precio = parseFloat(document.getElementById('edit-prod-precio').value);
 
         try {
             const response = await fetch(`/admin/productos/${idProducto}`, {
@@ -393,8 +420,9 @@ function eliminarProducto(idProducto) {
 
                     if (response.status === 401) return manejarSesionExpirada();
                     if (!response.ok) throw new Error("Fallo al eliminar");
-
-                    ejecutarCargaCompleta();
+                    
+                    await cargarProductos();
+                    await cargarMetricasDashboard();
                 } catch (error) {
                     alert("No se pudo eliminar el producto.");
                 }
@@ -421,7 +449,10 @@ async function guardarMaquina(e) {
         
         document.getElementById('form-maquina').reset();
         if (window.cerrarModalMaquina) window.cerrarModalMaquina();
-        ejecutarCargaCompleta();
+
+        await cargarProductos();
+        await cargarMetricasDashboard();
+
     } catch (error) {
         alert("Error al registrar máquina. Valida que el nombre no esté duplicado.");
     }
@@ -448,7 +479,8 @@ document.getElementById('form-editar-maquina').addEventListener('submit', async 
         });
         if (!response.ok) throw new Error();
         document.getElementById('modal-editar-maquina').classList.add('hidden');
-        ejecutarCargaCompleta();
+        
+        await cargarMaquinas();
     } catch (error) { alert("Error al actualizar máquina."); }
 });
 
@@ -464,7 +496,10 @@ function eliminarMaquina(idMaquina) {
                     });
 
                     if (!response.ok) throw new Error();
-                    ejecutarCargaCompleta();
+                    
+                    await cargarMaquinas();
+                    await cargarMetricasDashboard();
+
                 } catch (error) {
                     alert("No se pudo eliminar la máquina.");
                 }
@@ -487,7 +522,9 @@ function eliminarCalificacion(idCalificacion) {
                     if (response.status === 401) return manejarSesionExpirada();
                     if (!response.ok) throw new Error("No se pudo remover la calificación");
 
-                    ejecutarCargaCompleta();
+                    await cargarCalificaciones();
+                    await cargarMetricasDashboard();
+
                 } catch (error) {
                     console.error("❌ Error al eliminar calificación:", error);
                     alert("No se pudo eliminar la calificación.");
@@ -499,37 +536,67 @@ function eliminarCalificacion(idCalificacion) {
 
 async function ejecutarCargaCompleta() {
     const loader = document.getElementById('loader-global');
-    const panel = document.getElementById('contenido-panel');
     
     try {
-        await Promise.all([
-            cargarMetricasDashboard(),
-            cargarProductos(),
-            cargarMaquinas(),
-            cargarSugerencias(),
-            cargarCalificaciones()
-        ]);
-    } catch (error) {
-        console.error("❌ Error general durante la sincronización de datos:", error);
-    }
-
-    if (loader && panel) {
-        loader.classList.add('hidden');
-        panel.classList.remove('hidden');
-        cambiarPestana('panel'); 
-    }
-
-    const formProducto = document.getElementById('form-producto');
-    if (formProducto) {
-        formProducto.replaceWith(formProducto.cloneNode(true)); 
+        await cargarMetricasDashboard();
+        
+        if (loader) loader.classList.add('hidden');
+        
         document.getElementById('form-producto').addEventListener('submit', guardarProducto);
-    }
-
-    const formMaquina = document.getElementById('form-maquina');
-    if (formMaquina) {
-        formMaquina.replaceWith(formMaquina.cloneNode(true));
         document.getElementById('form-maquina').addEventListener('submit', guardarMaquina);
+        
+        const inputBuscador = document.getElementById('buscador-productos');
+        const btnBuscar = document.getElementById('btn-ejecutar-busqueda');
+        
+        if (inputBuscador) {
+            inputBuscador.addEventListener('keypress', (e) => { if (e.key === 'Enter') ejecutarBusqueda(); });
+        }
+        if (btnBuscar) {
+            btnBuscar.addEventListener('click', ejecutarBusqueda);
+        }
+
+    } catch (error) {
+        console.error("❌ Error en carga inicial:", error);
     }
+}
+
+function ejecutarBusqueda() {
+    const input = document.getElementById('buscador-productos');
+    const valor = input.value.toLowerCase();
+
+    const filas = document.querySelectorAll('#tabla-productos-body tr');
+    const mensajeNoResultados = document.getElementById('mensaje-no-resultados')
+
+    let encontrados = 0; 
+
+    filas.forEach(fila => {
+        const nombre = fila.getAttribute('data-nombre')?.toLowerCase() || "";
+
+        if (nombre.includes(valor)) {
+            fila.style.display = "";
+            encontrados++; 
+        } else {
+            fila.style.display = "none"; 
+        }
+    }); 
+
+    if (mensajeNoResultados) {
+        if (encontrados === 0) {
+            mensajeNoResultados.classList.remove('hidden');
+        } else {
+            mensajeNoResultados.classList.add('hidden'); 
+        }
+    }
+}
+
+const inputBusqueda = document.getElementById('buscador-productos'); 
+
+if (inputBusqueda) {
+    inputBusqueda.addEventListener('keypress', function (e){
+        if (e.key === 'Enter') {
+            ejecutarBusqueda();
+        }
+    });
 }
 
 
@@ -569,12 +636,8 @@ function actualizarInfoServidor(){
     }
 }
 
-
 document.addEventListener('DOMContentLoaded', () => {
     cargarNombreAdmin();
     ejecutarCargaCompleta(); 
     actualizarInfoServidor(); 
 });
-
-
-

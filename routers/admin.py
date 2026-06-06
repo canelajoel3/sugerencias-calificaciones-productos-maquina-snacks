@@ -167,14 +167,16 @@ def obtener_maquinas(db: Session = Depends(get_db), admin_actual = Depends(obten
 
 
 @router.get("/productos", status_code=200)
-def obtener_productos(db: Session = Depends(get_db), admin_actual = Depends(obtener_usuarios_actual)): 
+def obtener_productos(db: Session = Depends(get_db), admin_actual = Depends(obtener_usuarios_actual), buscar: str = None): 
     try:
-        lista_productos = db.query(models.Productos)\
+        query = db.query(models.Productos)\
             .options(joinedload(models.Productos.imagenes))\
-            .filter(models.Productos.id_empresa == admin_actual.id_empresa)\
-            .all()
-        
-        return lista_productos
+            .filter(models.Productos.id_empresa == admin_actual.id_empresa)
+
+        if buscar: 
+            query = query.filter(models.Productos.nombre.ilike(f"%{buscar}%"))
+
+        return query.all()
     except Exception as e:
         logger.exception("Error al leer catálogo de productos")
         raise HTTPException(status_code=500, detail="Error interno al recuperar el catálogo")

@@ -1,6 +1,5 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from datetime import datetime 
-from decimal import Decimal
 from enum import IntEnum
 from typing import List
 
@@ -66,8 +65,19 @@ class UsuarioCreate(BaseModel):
     nombre: str
     apellido: str
     email: str
-    contrasena: str
+    contrasena: str = Field(..., min_length=8)
     nombre_empresa: str
+
+@field_validator('contrasena')
+@classmethod
+def validar_complejidad(cls, v): 
+    if not any(char.isupper() for char in v):
+        raise ValueError('La contraseña debe tener al menos una mayúscula')
+    if not any(char.isdigit() for char in v): 
+        raise ValueError('La contraseña debe tener al menos un número')
+    return v 
+
+
 
 
 class UsuarioLogin(BaseModel):
