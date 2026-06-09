@@ -19,7 +19,7 @@ app = FastAPI(
     version= "1.0"
 ) 
 
-raw_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:8000")
+raw_origins = os.getenv("ALLOWED_ORIGINS")
 origins = ["*"]
 
 if not os.path.exists("static"):

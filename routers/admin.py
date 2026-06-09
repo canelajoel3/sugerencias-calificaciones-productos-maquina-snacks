@@ -133,6 +133,7 @@ def obtener_reporte_sugerencias(db: Session = Depends(get_db), admin_actual = De
                 .group_by(models.Sugerencias.producto_sugerido)\
                 .order_by(func.count(models.Sugerencias.id_sugerencia).desc()).all()
     
+    print(f"DEBUG: Se encontraron {len(reporte)} sugerencias.")
     return [{"producto": fila.producto, "votos": fila.voto, "fecha_creacion": fila.fecha_creacion } for fila in reporte]
 
 
