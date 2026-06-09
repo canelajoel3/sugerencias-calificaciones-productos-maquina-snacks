@@ -12,8 +12,9 @@ import models
 import schemas
 import logging
 import os
-import shutil
-import uuid
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 logger = logging.getLogger(__name__)
@@ -21,7 +22,7 @@ logger = logging.getLogger(__name__)
 cloudinary.config(
     cloud_name= "dlx5d7rl8",
     api_key= "461259699497394",
-    api_secret= "bx9q-j-rM7B5SMG6E_xVVX6yVfo"
+    api_secret= os.getenv("API_SECRET")
 )
 
 router = APIRouter(prefix="/admin", tags=["Panel de Administración"]) 
@@ -31,14 +32,10 @@ router.mount("/static", StaticFiles(
     name="static"
 )
 
-#CARPETA_IMAGEN = os.path.join(os.getcwd(), "static", "img")
-CARPETA_IMAGEN = "/tmp/static/img"
 RUTA_ACTUAL = os.path.dirname(os.path.abspath(__file__))
 RAIZ_PROYECTO = os.path.dirname(RUTA_ACTUAL) 
 RUTA_TEMPLATES2 = os.path.join(RAIZ_PROYECTO, "templates")
 
-if not os.path.exists(CARPETA_IMAGEN): 
-    os.makedirs(CARPETA_IMAGEN)
 
 templates = Jinja2Templates(directory=RUTA_TEMPLATES2)
 

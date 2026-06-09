@@ -344,8 +344,6 @@ document.getElementById('form-editar-producto').addEventListener('submit', async
     e.preventDefault();
     const idProducto = document.getElementById('edit-prod-id').value;
     const nombre = document.getElementById('edit-prod-nombre').value;
-    const precioInput = document.getElementById('edit-prod-precio'); 
-    const precio = precioInput ? parseFloat(precioInput.value) : 0;
 
     try {
         const response = await fetch(`/admin/productos/${idProducto}`, {
@@ -354,16 +352,13 @@ document.getElementById('form-editar-producto').addEventListener('submit', async
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ nombre, precio })
+            body: JSON.stringify({ nombre: nombre })
         });
 
         if (response.status === 401) return manejarSesionExpirada();
         if (!response.ok) throw new Error("No se pudo actualizar el producto");
 
-        // Cerrar modal
         if (window.cerrarModalEditarProducto) window.cerrarModalEditarProducto();
-        
-        // ACTUALIZACIÓN DE TABLA SIN RECARGAR LA PÁGINA
         await cargarProductos();
         await cargarMetricasDashboard();
         
