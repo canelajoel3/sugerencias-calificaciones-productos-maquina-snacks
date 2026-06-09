@@ -47,7 +47,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         setTimeout(() => { confirmationMsg.style.display = "none"; }, 4000);
                     }
 
-                    // Limpiar el campo de texto
                     suggestionForm.reset();
                 } else {
                     const errData = await response.json();

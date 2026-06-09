@@ -1,10 +1,13 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import func, case
+from sqlalchemy import func
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session, joinedload
 from security import obtener_usuarios_actual 
 from database import get_db
+import cloudinary
+import cloudinary.uploader
 import models 
 import schemas
 import logging
@@ -15,7 +18,18 @@ import uuid
 
 logger = logging.getLogger(__name__)
 
+cloudinary.config(
+    cloud_name= "dlx5d7rl8",
+    api_key= "461259699497394",
+    api_secret= "bx9q-j-rM7B5SMG6E_xVVX6yVfo"
+)
+
 router = APIRouter(prefix="/admin", tags=["Panel de Administración"]) 
+
+router.mount("/static", StaticFiles(
+    directory="static"),
+    name="static"
+)
 
 #CARPETA_IMAGEN = os.path.join(os.getcwd(), "static", "img")
 CARPETA_IMAGEN = "/tmp/static/img"
@@ -86,14 +100,11 @@ async def crear_producto(
         raise HTTPException(status_code=400, detail="El nombre no puede estar vacío")
 
     try:
-        extension = file.filename.split(".")[-1]
-        nombre_archivo = f"{uuid.uuid4()}.{extension}"
-        ruta_guardado = os.path.join(CARPETA_IMAGEN, nombre_archivo)
-        
-        with open(ruta_guardado, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        resultado = cloudinary.uploader.upload(file.file, resource_type="image")
+        url_image = resultado.get("secure_url")
     except Exception as e:
-        raise HTTPException(status_code=500, detail="No se pudo guardar la imagen")
+        logger.exception("Error al subir imagen a Cloudinary")
+        raise HTTPException(status_code=500, detail="No se pudo subir la imagen a la nube")
 
     try:
         nuevo_producto = models.Productos(
@@ -106,7 +117,7 @@ async def crear_producto(
 
         nueva_imagen = models.Productos_Imagenes(
             id_producto=nuevo_producto.id_producto,
-            ruta_imagen=f"/static/img/{nombre_archivo}"
+            ruta_imagen=url_image
         )
         db.add(nueva_imagen)
         db.commit()
@@ -114,13 +125,11 @@ async def crear_producto(
         return {
             "id_producto": nuevo_producto.id_producto,
             "nombre": nuevo_producto.nombre,
-            "ruta_imagen": f"/static/img/{nombre_archivo}"
+            "ruta_imagen": url_image
         }
 
     except Exception as e:
         db.rollback()
-        if os.path.exists(ruta_guardado):
-            os.remove(ruta_guardado)
         raise HTTPException(status_code=500, detail="Error al registrar en base de datos")
 
 @router.get("/reporte/sugerencias", status_code=200)
