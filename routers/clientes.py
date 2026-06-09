@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.templating import Jinja2Templates
+from security import obtener_usuarios_actual 
 from sqlalchemy.orm import Session
 from database import get_db 
 import models 
 import schemas
 import logging 
 import os
-from fastapi.templating import Jinja2Templates
 
 
 
@@ -108,10 +109,11 @@ def registrar_calificacion(id_maquina: int, datos_entrada: schemas.EsquemaCalifi
 
 
 @router.get("/sugerencias")
-def obtener_sugerencias_detalladas(db: Session = Depends(get_db)):
+def obtener_sugerencias_detalladas(db: Session = Depends(get_db), admin_actual = Depends(obtener_usuarios_actual)):
     try:
-        lista_sugerencias = db.query(models.Sugerencias).all()
-
+        lista_sugerencias = db.query(models.Sugerencias)\
+                                .filter(models.Sugerencias.id_empresa == admin_actual.id_empresa)\
+                                .all()
         return lista_sugerencias
     
     except Exception as e:
