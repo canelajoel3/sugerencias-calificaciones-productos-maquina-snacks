@@ -102,8 +102,9 @@
     <script>
         document.getElementById('registro-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const alertContainer = document.getElementById('alert-container');
+
             const nombre = document.getElementById('nombre').value.trim();
             const apellido = document.getElementById('apellido').value.trim();
             const email = document.getElementById('email').value.trim();
@@ -117,11 +118,11 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        nombre: nombre,
-                        apellido: apellido,
-                        email: email,
-                        contrasena: contrasena,
-                        nombre_empresa: nombre_empresa
+                        nombre,
+                        apellido,
+                        email,
+                        contrasena,
+                        nombre_empresa
                     })
                 });
 
@@ -129,15 +130,25 @@
 
                 if (response.ok) {
                     alertContainer.className = "mb-4 p-4 rounded-xl text-sm border bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-                    alertContainer.innerHTML = `<i class="fa-solid fa-circle-check mr-2"></i> ¡Registro exitoso! Ya puedes iniciar sesión.`;
+                    alertContainer.innerHTML = `✔ Registro exitoso`;
                     alertContainer.classList.remove('hidden');
                     document.getElementById('registro-form').reset();
                 } else {
-                    throw new Error(data.detail || 'Error al procesar el registro');
+                    // 🔥 SOLUCIÓN AQUÍ
+                    let mensajeError = 'Error al procesar el registro';
+
+                    if (Array.isArray(data.detail)) {
+                        mensajeError = data.detail.map(err => err.msg).join(', ');
+                    } else if (typeof data.detail === 'string') {
+                        mensajeError = data.detail;
+                    }
+
+                    throw new Error(mensajeError);
                 }
+
             } catch (error) {
                 alertContainer.className = "mb-4 p-4 rounded-xl text-sm border bg-rose-500/10 text-rose-400 border-rose-500/20";
-                alertContainer.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-2"></i> ${error.message}`;
+                alertContainer.innerHTML = `❌ ${error.message}`;
                 alertContainer.classList.remove('hidden');
             }
         });
