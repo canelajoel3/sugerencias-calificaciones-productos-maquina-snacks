@@ -20,7 +20,7 @@ app = FastAPI(
 ) 
 
 raw_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:8000")
-origins = raw_origins.split(",")
+origins = ["*"]
 
 if not os.path.exists("static"):
     os.makedirs("static/img")
