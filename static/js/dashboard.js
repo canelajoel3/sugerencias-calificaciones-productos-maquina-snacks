@@ -388,7 +388,7 @@ function abrirModalEditarMaquina(id, nombre, estado) {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ nombre, precio })
+                body: JSON.stringify({ nombre: nombre })
             });
 
             if (response.status === 401) return manejarSesionExpirada();
