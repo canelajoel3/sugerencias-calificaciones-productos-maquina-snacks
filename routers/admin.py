@@ -17,7 +17,8 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin", tags=["Panel de Administración"]) 
 
-CARPETA_IMAGEN = os.path.join(os.getcwd(), "static", "img")
+#CARPETA_IMAGEN = os.path.join(os.getcwd(), "static", "img")
+CARPETA_IMAGEN = "/tmp/static/img"
 RUTA_ACTUAL = os.path.dirname(os.path.abspath(__file__))
 RAIZ_PROYECTO = os.path.dirname(RUTA_ACTUAL) 
 RUTA_TEMPLATES2 = os.path.join(RAIZ_PROYECTO, "templates")
@@ -133,7 +134,7 @@ def obtener_reporte_sugerencias(db: Session = Depends(get_db), admin_actual = De
                 .group_by(models.Sugerencias.producto_sugerido)\
                 .order_by(func.count(models.Sugerencias.id_sugerencia).desc()).all()
     
-    print(f"DEBUG: Se encontraron {len(reporte)} sugerencias.")
+    
     return [{"producto": fila.producto, "votos": fila.voto, "fecha_creacion": fila.fecha_creacion } for fila in reporte]
 
 
