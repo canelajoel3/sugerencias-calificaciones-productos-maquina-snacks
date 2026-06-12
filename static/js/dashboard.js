@@ -395,7 +395,10 @@ function abrirModalEditarMaquina(id, nombre, estado) {
             if (!response.ok) throw new Error("No se pudo actualizar el producto");
 
             if (window.cerrarModalEditarProducto) window.cerrarModalEditarProducto();
-            ejecutarCargaCompleta();
+
+            await cargarProductos();
+            await cargarMetricasDashboard(); 
+            
         } catch (error) {
             console.error(error);
             alert("Ocurrió un error al actualizar el producto.");
