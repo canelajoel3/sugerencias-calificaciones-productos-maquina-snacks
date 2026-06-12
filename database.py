@@ -6,23 +6,30 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-USUARIO = os.getenv("DB_USUARIO")
-PASSWORD = os.getenv("DB_PASSWORD")
-HOST = os.getenv("DB_HOST")
-PORT = os.getenv("DB_PORT")
-NAME = os.getenv("DB_NAME")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-password_codificada = urllib.parse.quote_plus(PASSWORD)
+if DATABASE_URL:
+    CONEXION = DATABASE_URL
 
-CONEXION = f"mysql+pymysql://{USUARIO}:{password_codificada}@{HOST}:{PORT}/{NAME}"
+else: 
 
-engine = create_engine(url=CONEXION, echo=True)
+    USUARIO = os.getenv("DB_USUARIO")
+    PASSWORD = os.getenv("DB_PASSWORD")
+    HOST = os.getenv("DB_HOST")
+    PORT = os.getenv("DB_PORT")
+    NAME = os.getenv("DB_NAME")
+
+    password_codificada = urllib.parse.quote_plus(PASSWORD)
+    CONEXION = f"mysql+pymysql://{USUARIO}:{password_codificada}@{HOST}:{PORT}/{NAME}"
+
+if CONEXION.startswith("sqlite"):
+    engine = create_engine(url=CONEXION, echo=True, connect_args={"check_same_therad": False})
+else:
+    engine = create_engine(url=CONEXION, echo=True)
 
 session_base = sessionmaker(autoflush=False, autocommit=False, bind=engine)
 
 Base = declarative_base()
-
-
 
 def get_db():
     db = session_base()
