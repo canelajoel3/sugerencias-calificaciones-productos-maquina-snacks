@@ -27,6 +27,7 @@ jobs:
 
     - name: Ejecutar pruebas automáticas con Pytest
       env:
+        DB_PASSWORD: "mock_password_para_pruebas"
         API_SECRET: "mock_secret_para_pruebas"
         DATABASE_URL: "sqlite:///:memory:"
       run: |
