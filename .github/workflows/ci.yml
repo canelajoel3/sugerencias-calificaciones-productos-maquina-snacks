@@ -28,6 +28,10 @@ jobs:
     - name: Ejecutar pruebas automáticas con Pytest
       env:
         DB_PASSWORD: "mock_password_para_pruebas"
+        DB_PORT: "3306"               
+        DB_HOST: "localhost"
+        DB_USER: "canela"
+        DB_NAME: "vending_db"
         API_SECRET: "mock_secret_para_pruebas"
         DATABASE_URL: "sqlite:///:memory:"
       run: |
