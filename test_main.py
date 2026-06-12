@@ -1,9 +1,22 @@
+import os 
+os.environ["DATABASE_URL"] = "sqlite:///./test.db"
+
+
 import pytest
 from fastapi.testclient import TestClient
 from main import app 
-from database import get_db, Base, engine
+from database import Base, get_db
+from sqlalchemy import create_engine
 from security import obtener_usuarios_actual 
 from sqlalchemy.orm import sessionmaker
+from models import Maquina, Producto, Sugerencia, Calificacion
+
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+engine = create_engine(DATABASE_URL, 
+                    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
+                    )
 
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -14,6 +27,7 @@ class MockAdmin:
 
 def override_obtener_usuarios_actual(): 
     return MockAdmin() 
+
 
 @pytest.fixture(autouse=True)
 def setup_database():
