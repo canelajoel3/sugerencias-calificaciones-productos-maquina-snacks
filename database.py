@@ -23,7 +23,7 @@ else:
     CONEXION = f"mysql+pymysql://{USUARIO}:{password_codificada}@{HOST}:{PORT}/{NAME}"
 
 if CONEXION.startswith("sqlite"):
-    engine = create_engine(url=CONEXION, connect_args={"check_same_therad": False}, echo=True)
+    engine = create_engine(url=CONEXION, connect_args={"check_same_thread": False}, echo=True)
 else:
     engine = create_engine(url=CONEXION, echo=True)
 
